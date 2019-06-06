@@ -1,6 +1,6 @@
 
 def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None, batch_size=128, resize=None, n_epochs=10,
-          device=None, is_resnet=False):
+          device=None, is_resnet=False, log_string=None):
     import torch
     import torch.utils.tensorboard as tb
     from data import load
@@ -22,6 +22,8 @@ def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None,
     if log_dir is not None:
         train_logger = tb.SummaryWriter(log_dir+"/train", flush_secs=5)
         valid_logger = tb.SummaryWriter(log_dir+"/valid", flush_secs=5)
+        if log_string is not None:
+            train_logger.add_text("info", log_string)
 
     # Construct the loss and accuracy functions
     loss = torch.nn.BCEWithLogitsLoss()
@@ -82,6 +84,8 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('logdir')
+    parser.add_argument('-b', '--batch_size', type=int, default=128)
+    parser.add_argument('--no_normalization', action='store_true')
     parser.add_argument('-n', '--n_epochs', type=int, default=10)
     parser.add_argument('-o', '--optimizer', default='optim.Adam(parameters)')
     args = parser.parse_args()
@@ -96,5 +100,12 @@ if __name__ == "__main__":
     # Parse the optimizer
     optimizer = eval(args.optimizer, {'parameters': net.parameters(), 'optim': torch.optim})
 
+    # Using data augmentation
+    from data import load
+    train_data = load.get_dogs_and_cats(batch_size=args.batch_size, resize=(128, 128), random_horizontal_flip=True,
+                                        normalize=not args.no_normalization)
+    valid_data = load.get_dogs_and_cats('valid', resize=(128, 128), batch_size=args.batch_size,
+                                        normalize=not args.no_normalization)
     # Train
-    train(net, args.logdir, device=device, resize=(128, 128), n_epochs=args.n_epochs, optimizer=optimizer)
+    train(net, args.logdir, train_data=train_data, valid_data=valid_data, device=device, resize=(128, 128), n_epochs=args.n_epochs,
+          optimizer=optimizer, log_string=str(args))
