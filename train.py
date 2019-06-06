@@ -1,5 +1,4 @@
 
-
 def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None, batch_size=128, resize=None, n_epochs=10,
           device=None, is_resnet=False):
     import torch
@@ -75,3 +74,22 @@ def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None,
             valid_logger.add_scalar('accuracy', np.mean(val_accuracies), global_step=global_step)
         else:
             print('epoch = % 3d   train accuracy = %0.3f   valid accuracy = %0.3f'%(epoch, np.mean(accuracies), np.mean(val_accuracies)))
+
+
+if __name__ == "__main__":
+    import torch
+    # Parse all input arguments
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('logdir')
+    args = parser.parse_args()
+
+    # Create the CUDA device if available
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    # Create the ConvNet
+    from model import ConvNet
+    net = ConvNet()
+
+    # Train
+    train(net, args.logdir, device=device, resize=(128, 128))
