@@ -82,6 +82,8 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('logdir')
+    parser.add_argument('-n', '--n_epochs', type=int, default=10)
+    parser.add_argument('-o', '--optimizer', default='optim.Adam(parameters)')
     args = parser.parse_args()
 
     # Create the CUDA device if available
@@ -91,5 +93,8 @@ if __name__ == "__main__":
     from model import ConvNet
     net = ConvNet()
 
+    # Parse the optimizer
+    optimizer = eval(args.optimizer, {'parameters': net.parameters(), 'optim': torch.optim})
+
     # Train
-    train(net, args.logdir, device=device, resize=(128, 128))
+    train(net, args.logdir, device=device, resize=(128, 128), n_epochs=args.n_epochs, optimizer=optimizer)
