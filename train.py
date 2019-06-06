@@ -102,10 +102,10 @@ if __name__ == "__main__":
 
     # Using data augmentation
     from data import load
-    train_data = load.get_dogs_and_cats(batch_size=args.batch_size, resize=(128, 128), random_horizontal_flip=True,
+    train_data = load.get_dogs_and_cats(batch_size=args.batch_size, random_crop=(128, 128), random_horizontal_flip=True,
                                         normalize=not args.no_normalization)
     valid_data = load.get_dogs_and_cats('valid', resize=(128, 128), batch_size=args.batch_size,
                                         normalize=not args.no_normalization)
     # Train
-    train(net, args.logdir, train_data=train_data, valid_data=valid_data, device=device, resize=(128, 128), n_epochs=args.n_epochs,
-          optimizer=optimizer, log_string=str(args))
+    train(net, args.logdir, train_data=train_data, valid_data=valid_data, device=device, resize=(128, 128),
+          n_epochs=args.n_epochs, optimizer=optimizer, log_string=str(args))
