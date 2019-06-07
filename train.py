@@ -1,6 +1,6 @@
 
 def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None, batch_size=128, resize=None, n_epochs=10,
-          device=None, is_resnet=False, log_string=None):
+          device=None, is_resnet=False, log_string=None, schedule_lr=False):
     import torch
     import torch.utils.tensorboard as tb
     from data import load
@@ -12,6 +12,8 @@ def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None,
         valid_data = load.get_dogs_and_cats('valid', resize=resize, batch_size=batch_size, is_resnet=is_resnet)
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters())
+    if schedule_lr:
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
     # Transfer the data to a GPU (optional)
     if device is not None:
@@ -71,6 +73,11 @@ def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None,
             # Compute the accuracy
             val_accuracies.extend(accuracy(o, label).detach().cpu().numpy())
 
+        # Log and Uodate the LR
+        if schedule_lr:
+            train_logger.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=global_step)
+            scheduler.step(np.mean(val_accuracies))
+
         # log
         if valid_logger is not None:
             valid_logger.add_scalar('accuracy', np.mean(val_accuracies), global_step=global_step)
@@ -88,6 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('--no_normalization', action='store_true')
     parser.add_argument('-n', '--n_epochs', type=int, default=10)
     parser.add_argument('-o', '--optimizer', default='optim.Adam(parameters)')
+    parser.add_argument('-sl', '--schedule_lr', action='store_true')
     args = parser.parse_args()
 
     # Create the CUDA device if available
@@ -108,4 +116,4 @@ if __name__ == "__main__":
                                         normalize=not args.no_normalization)
     # Train
     train(net, args.logdir, train_data=train_data, valid_data=valid_data, device=device, resize=(128, 128),
-          n_epochs=args.n_epochs, optimizer=optimizer, log_string=str(args))
+          n_epochs=args.n_epochs, optimizer=optimizer, log_string=str(args), schedule_lr=args.schedule_lr)
