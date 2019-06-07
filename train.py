@@ -13,7 +13,7 @@ def train(model, log_dir=None, train_data=None, valid_data=None, optimizer=None,
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters())
     if schedule_lr:
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max')
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=50)
 
     # Transfer the data to a GPU (optional)
     if device is not None:
