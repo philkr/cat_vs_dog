@@ -28,8 +28,8 @@ class ConvNet(torch.nn.Module):
         super().__init__()
         L = [torch.nn.Conv2d(n_input_channels, 32, kernel_size=7, padding=3, stride=2),
              torch.nn.BatchNorm2d(32),
-             torch.nn.ReLU()  # ,
-             # torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+             torch.nn.ReLU(),
+             torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
              ]
         c = 32
         for l in layers:
