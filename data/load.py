@@ -10,7 +10,7 @@ def get_transform(resize=None, random_crop=None, random_horizontal_flip=False, n
 	import torchvision
 	if is_resnet:
 		return torchvision.transforms.Compose([
-			torchvision.transforms.Scale(256),
+			torchvision.transforms.Resize(256),
 			torchvision.transforms.CenterCrop(224),
 			torchvision.transforms.ToTensor(), 
 			torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
